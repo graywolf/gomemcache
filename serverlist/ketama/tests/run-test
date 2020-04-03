@@ -1,0 +1,71 @@
+#!/bin/sh
+set -eu
+
+base="$(pwd)/serverlist/ketama/tests"
+
+pdir="$base/pids"
+mkdir -p -- "$pdir"
+
+ldir="$base/logs"
+mkdir -p -- "$ldir"
+
+cleanup() {
+	j=0
+	while [ "$j" -lt "$i" ]; do
+		kill "$(cat "$pdir/$j")"
+		j=$((j+1))
+	done
+}
+trap cleanup EXIT
+
+i=0
+while IFS=' ' read -r type addr port; do
+	args="-vvdP $pdir/$i"
+
+	case "$type" in
+	t)
+		args="$args -l $addr -p $port" ;;
+	u)
+		args="$args -s $(pwd)/$addr" ;;
+	*)
+		printf 'Unknown type: %s\n' "$type"
+		exit 1
+		;;
+	esac
+
+	memcached $args >"$ldir/$i.out" 2>"$ldir/$i.err"
+
+	i=$((i+1))
+done <"$base/servers"
+
+data="$base/data"
+keys="$((64 * 1024))"
+openssl rand -base64 "$((keys * 64 / 4 * 3))" >"$data"
+if [ "$(wc -l <"$data")" -ne "$keys" ]; then
+	printf >&2 'Openssl does not wrap lines to 64 characters.'
+	exit 1
+fi
+
+sleep 1
+
+"$base/test-go" "$base/servers" "$data"
+
+j=0
+while [ "$j" -lt "$i" ]; do
+	if ! grep -Eq '^<[0-9]+ set ' "$ldir/$j.err"; then
+		printf >&2 'No set detected in: %s\n' "$ldir/$j.err"
+		exit 1
+	fi
+	j=$((j+1))
+done
+
+"$base/test-c"  "$base/servers" "$data"
+
+j=0
+while [ "$j" -lt "$i" ]; do
+	if ! grep -Eq '^<[0-9]+ get ' "$ldir/$j.err"; then
+		printf >&2 'No get detected in: %s\n' "$ldir/$j.err"
+		exit 1
+	fi
+	j=$((j+1))
+done

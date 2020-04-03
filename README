@@ -1,0 +1,10 @@
+This repository holds some memcached related libraries and utilities in golang.
+
+
+git.sr.ht/~graywolf/gomemcache/serverlist/ketama
+------------------------------------------------
+
+Provides libmemcached compatible consistent hashing. That means that you can use
+memcached cluster both from golang and from for example C or Ruby and have same
+keys go to the same servers. See the package itself for example of us and more
+documentation.

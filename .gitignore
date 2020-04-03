@@ -1,0 +1,6 @@
+/serverlist/ketama/tests/pids
+/serverlist/ketama/tests/logs
+
+/serverlist/ketama/tests/data
+/serverlist/ketama/tests/test-c
+/serverlist/ketama/tests/test-go
