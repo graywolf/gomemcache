@@ -1,0 +1,15 @@
+image: archlinux
+secrets:
+  - a9acb8e7-4e6a-45fd-be82-569c31b5fae7
+sources:
+  - git@git.sr.ht:~graywolf/gomemcache
+packages:
+  - base-devel
+  - go
+  - libmemcached
+  - memcached
+  - openssl
+tasks:
+  - check: |
+      cd gomemcache
+      make
