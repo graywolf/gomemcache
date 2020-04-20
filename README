@@ -1,3 +1,6 @@
+git.sr.ht/~graywolf/gomemcache
+==============================
+
 This repository holds some memcached related libraries and utilities in golang.
 
 
